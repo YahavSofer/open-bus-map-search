@@ -1,15 +1,19 @@
 import styled from 'styled-components'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
 
-import { Label } from './components/Label'
-import { NotFound } from './components/NotFound'
-import { PageContainer } from './components/PageContainer'
+import { Typography } from 'antd'
+
+import { Label } from '../components/Label'
+import { NotFound } from '../components/NotFound'
+import { PageContainer } from '../components/PageContainer'
+import BusLineProfileCard from './BusLineProfileCard'
 
 import { useTranslation } from 'react-i18next'
 
 //API
 import Widget from 'src/shared/Widget'
 import { useLoaderData } from 'react-router-dom'
+import { useEffect } from 'react'
 
 const Profile = () => {
   return (
@@ -29,6 +33,8 @@ const GeneralDetailsAboutLine = () => {
   )
 }
 
+const { Title } = Typography
+
 const LineProfileComponent = () => {
   const { t } = useTranslation()
   const route = useLoaderData() as {
@@ -36,9 +42,13 @@ const LineProfileComponent = () => {
     agency_name: string
     route_short_name: string
     route_long_name: string
+    operator_ref: string
     message?: string
   }
-  console.log('route', route)
+
+  useEffect(() => {
+    console.log('route', route)
+  }, [])
 
   if (route.message)
     return (
@@ -53,12 +63,9 @@ const LineProfileComponent = () => {
   return (
     <Grid xs={12} lg={6}>
       <Widget>
-        <h2 className="title">{t('lineProfile.title')}</h2>
-        <label> מפעיל: {route.agency_name} </label>
-        <br></br>
-        <label> מספר קו: {route.route_short_name} </label>
-        <br></br>
-        <label> כיוון נסיעה: {route.route_long_name} </label>
+        <Title level={3}>{t('lineProfile.title')}</Title>
+        <BusLineProfileCard data={route} />
+
         <div>
           <pre style={{ direction: 'ltr' }}>{JSON.stringify(route, null, 2)}</pre>
           <Label text="שעות פעילות" />
