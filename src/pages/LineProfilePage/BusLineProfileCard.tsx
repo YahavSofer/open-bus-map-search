@@ -1,54 +1,45 @@
-import React from 'react'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
 import { Label } from '../components/Label'
 import { busIconPath } from '../components/utils/BusIcon'
+import getRouteTitle from '../components/utils/getBusTitle'
+import { BusRoute } from 'src/model/busRoute'
 
-import { INPUT_SIZE } from 'src/resources/sizes'
-
-interface BusLineProfileCardProps {
-  data: {
-    agency_name: string
-    route_short_name: string
-    route_long_name: string
-    operator_ref: string
-    message?: string
-  }
-}
-
-const BusLineProfileCard: React.FC<BusLineProfileCardProps> = ({ data }) => {
-  const iconPath = busIconPath(data.operator_ref!)
+const BusLineProfileCard = ({ data }: BusRoute) => {
+  const iconPath = busIconPath(data.operatorId!)
+  const title = getRouteTitle(data)
 
   return (
     <Card
       className={'busLineCard'}
       sx={{
-        maxWidth: INPUT_SIZE,
+        display: 'flex',
         boxShadow: ' 0px 0px 5px #C7C7D1',
         borderRadius: '1.4rem',
-        display: 'flex',
-        justifyContent: 'center',
+        padding: '0.5rem 1rem 0.5rem 1rem',
       }}>
       <CardContent>
-        <Grid marginLeft={3} container spacing={2}>
+        <Grid xs={12} container spacing={2}>
           <Grid xs={6}>
             <Label text={'מספר קו:'} style={{ fontWeight: 'bold', fontSize: '1.2em' }} />
-            {data.route_short_name}
+            <p style={{ fontSize: '1.1rem', margin: 'auto' }}>{data.lineNumber}</p>
           </Grid>
-
           <Grid xs={6}>
             <Label text={'מפעיל:'} style={{ fontWeight: 'bold', fontSize: '1.2em' }} />
-            <div style={{ display: 'flex' }}>
-              <img src={iconPath} className="bus-icon" style={{ marginLeft: '0.5em' }}></img>
-              {data.agency_name}
+            <div style={{ display: 'flex', alignContent: 'center', justifyContent: 'start' }}>
+              <img
+                src={iconPath}
+                className="bus-icon"
+                style={{ marginLeft: '0.5em', width: '2.5rem' }}></img>
+              <p style={{ fontSize: '1.1rem', margin: '0' }}>{data.agencyName}</p>
             </div>
           </Grid>
+        </Grid>
 
-          <Grid paddingTop={3} marginBottom={3}>
-            <Label text={'כיוון נסיעה:'} style={{ fontWeight: 'bold', fontSize: '1.2em' }} />
-            {data.route_long_name}
-          </Grid>
+        <Grid marginTop={6} container>
+          <Label text={'כיוון נסיעה:'} style={{ fontWeight: 'bold', fontSize: '1.2em' }} />
+          <p style={{ fontSize: '1.1rem', margin: '0' }}>{title}</p>
         </Grid>
       </CardContent>
     </Card>
