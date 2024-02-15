@@ -20,7 +20,7 @@ const LineProfileComponent = () => {
   const { Title } = Typography
   const { t } = useTranslation()
   const [route, setRoute] = useState(useLoaderData())
-  console.log(route)
+  // console.log(route)
 
   useEffect(() => {
     const controller = new AbortController()
