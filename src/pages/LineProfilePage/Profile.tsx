@@ -1,117 +1,110 @@
+// EXTERNAL COMPONENTS
 import styled from 'styled-components'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
-
 import { Typography } from 'antd'
+import { useTranslation } from 'react-i18next'
+import { useLoaderData } from 'react-router-dom'
 
-import { Label } from '../components/Label'
-import { NotFound } from '../components/NotFound'
+// COMPONENTS
 import { PageContainer } from '../components/PageContainer'
 import BusLineProfileCard from './BusLineProfileCard'
-
-import { useTranslation } from 'react-i18next'
+import { MapWithLocationsAndPath } from '../components/map-related/MapWithLocationsAndPath'
+import Widget from 'src/shared/Widget'
 
 //API
-import Widget from 'src/shared/Widget'
-import { useLoaderData } from 'react-router-dom'
-import { useEffect } from 'react'
-
-const Profile = () => {
-  return (
-    <>
-      <GeneralDetailsAboutLine />
-    </>
-  )
-}
-
-const GeneralDetailsAboutLine = () => {
-  return (
-    <>
-      <PageContainer className="line-data-container">
-        <LineProfileComponent />
-      </PageContainer>
-    </>
-  )
-}
-
-const { Title } = Typography
+import { useEffect, useState } from 'react'
+import { getRoutesAsync } from 'src/api/gtfsService'
+import moment from 'moment'
 
 const LineProfileComponent = () => {
+  const { Title } = Typography
   const { t } = useTranslation()
-  const route = useLoaderData() as {
-    // TODO: find better type definition
-    agency_name: string
-    route_short_name: string
-    route_long_name: string
-    operator_ref: string
-    message?: string
-  }
+  const [route, setRoute] = useState(useLoaderData())
+  console.log(route)
 
   useEffect(() => {
-    console.log('route', route)
+    const controller = new AbortController()
+    const signal = controller.signal
+
+    getRoutesAsync(
+      moment().subtract(1, 'days'),
+      moment(),
+      route.operator_ref,
+      route.route_short_name,
+      signal,
+    ).then((routes) => {
+      console.log(routes)
+      const gtfs_route = routes.filter((tempRoute) => tempRoute.lineRef === route.line_ref)
+      console.log('ROUTE:  ', gtfs_route)
+      setRoute(gtfs_route[0])
+    })
+    return () => controller.abort()
   }, [])
 
-  if (route.message)
-    return (
-      <NotFound>
-        <Widget>
-          <h1>{t('lineProfile.notFound')}</h1>
-          <pre>{route.message}</pre>
-        </Widget>
-      </NotFound>
-    )
-
   return (
-    <Grid xs={12} lg={6}>
-      <Widget>
-        <Title level={3}>{t('lineProfile.title')}</Title>
-        <BusLineProfileCard data={route} />
-
-        <div>
-          <pre style={{ direction: 'ltr' }}>{JSON.stringify(route, null, 2)}</pre>
-          <Label text="שעות פעילות" />
+    <PageContainer>
+      <Grid xs={12} lg={6}>
+        <Widget>
+          <Title level={3}>{t('lineProfile.title')}</Title>
+          <Grid columns={{ xs: 4, sm: 8 }}>
+            <Grid xs={4}>
+              <BusLineProfileCard data={route} />
+            </Grid>
+            {/* <Grid xs={4}>
+              <MapWithLocationsAndPath positions={filteredPositions} paths={paths} />
+            </Grid> */}
+          </Grid>
+          {/* <Grid>
+            <div>
+              <pre style={{ direction: 'ltr' }}>{JSON.stringify(route, null, 2)}</pre>
+            </div>
+          </Grid> */}
+          {/* <Label text="שעות פעילות" /> */}
           {/* GET the earliest and the latest bus drive departure time for each day */}
-          <TableStyle>
-            <table className="time-table">
-              <tr>
-                <th></th>
-                <th>יום ראשון</th>
-                <th>יום שני</th>
-                <th>יום שלישי</th>
-                <th>יום רביעי</th>
-                <th>יום חמישי</th>
-                <th>יום שישי</th>
-                <th>יום שבת</th>
-              </tr>
+          {/* <TableStyle>
+              <table className="time-table">
+                <tr>
+                  <th></th>
+                  <th>יום ראשון</th>
+                  <th>יום שני</th>
+                  <th>יום שלישי</th>
+                  <th>יום רביעי</th>
+                  <th>יום חמישי</th>
+                  <th>יום שישי</th>
+                  <th>יום שבת</th>
+                </tr>
 
-              <tr>
-                <td>אוטובוס ראשון</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
+                <tr>
+                  <td>אוטובוס ראשון</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
 
-              <tr>
-                <td>אוטובוס אחרון</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-            </table>
-          </TableStyle>
+                <tr>
+                  <td>אוטובוס אחרון</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </table>
+            </TableStyle>
 
-          <Label text="הערות ועדכונים על הקו:" />
-          <div></div>
-        </div>
-      </Widget>
-    </Grid>
+            <Label text="הערות ועדכונים על הקו:" />
+            <div></div>
+          </div>
+        </Grid> */}
+        </Widget>
+      </Grid>
+    </PageContainer>
   )
 }
 
@@ -138,5 +131,14 @@ const TableStyle = styled.table`
     border-collapse: collapse;
   }
 `
+const Profile = () => {
+  return (
+    <>
+      <PageContainer className="line-data-container">
+        <LineProfileComponent />
+      </PageContainer>
+    </>
+  )
+}
 
 export default Profile
